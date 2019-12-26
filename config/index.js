@@ -2,7 +2,7 @@ const path = require('path')
 module.exports = {
   rootFile: path.resolve(__dirname, '../dict'), // 设置储存顶级文件
   puppeteer: {
-    headless: false // 是否在执行时候关闭浏览器
+    headless: true // 是否在执行时候关闭浏览器
   },
   emulate: 'iPhone 6 Plus', // 配置当前需要爬取的网页打开大小环境
   defaultOptions: {

@@ -1,4 +1,5 @@
 /vendor
 /node_modules
+/dict
 .env
 .idea
