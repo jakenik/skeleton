@@ -25,10 +25,9 @@ module.exports = {
           let name = fileName || html[locationType].replace(/\//g, '-').replace(/(^-)|(-$)/, '')
           if (name === '') name = 'index'
           let file = `${dir}/${name}.html`
-          fs.writeFile(file, html.content, (err) => {
-            if (err) throw err;
-            console.log(file + ' 文件已被保存');
-          })
+          let err = await fs.writeFileSync(file, html.content)
+          if (err) throw err;
+          console.log(file + ' 文件已被保存');
         })
         resolve(skeleton)
       })

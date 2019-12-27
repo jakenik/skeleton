@@ -1,5 +1,7 @@
 const path = require('path')
 module.exports = {
+  host: '127.0.0.1',
+  port: '9898',
   rootFile: path.resolve(__dirname, '../dict'), // 设置储存顶级文件
   puppeteer: {
     headless: true // 是否在执行时候关闭浏览器
