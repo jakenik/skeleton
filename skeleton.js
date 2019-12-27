@@ -2,7 +2,7 @@
  * @Author: jake 
  * @Date: 2019-12-23 14:05:44 
  * @Last Modified by: jake
- * @Last Modified time: 2019-12-26 17:22:28
+ * @Last Modified time: 2019-12-27 10:22:18
  * 骨架屏启动实例
  */
 
@@ -10,7 +10,7 @@ const puppeteer = require('puppeteer')
 const devices = require('puppeteer/DeviceDescriptors');
 const { parse, toPlainObject, fromPlainObject, generate } = require('css-tree')
 const config = require('./config')
-const { getScriptContent } = require('./util')
+const { getScriptContent, awaitFor } = require('./util')
 const HTML_MODEL = require('./model')
 const DEAD_OBVIOUS = new Set(['*', 'body', 'html'])
 class Skeleton {
@@ -105,7 +105,9 @@ class Skeleton {
     })
     return cleanedStyles
   }
-  async genHtml(url) {
+  async genHtml(url, {
+    cookies
+  }) {
     const page = await this.newPage()
     const stylesheetAstObjects = {}
     const stylesheetContents = []
@@ -127,13 +129,23 @@ class Skeleton {
         })
       }
     })
+    await this.setCookie(page, url, cookies)
     const response = await page.goto(url, { waitUntil: 'networkidle2' })
-
     if (response && !response.ok()) {
       throw new Error(`${response.status} on ${url}`)
     }
     return await this.makeSkeleton(page, stylesheetContents, stylesheetAstObjects)
 
+  }
+  async setCookie(page, url, cookies) {
+    return await awaitFor(cookies, async ({
+      value,
+      name
+    }) => await page.setCookie({
+      url,
+      value: value,
+      name: name
+    }))
   }
   async closePage() {
     await this.browser.close();

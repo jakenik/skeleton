@@ -16,12 +16,13 @@ module.exports = {
         await awaitFor(routes, async ({
           path,
           locationType = 'hash',
-          fileName = null
+          fileName = null,
+          cookies
         }) => {
-          const html = await skeleton.genHtml(path)
-          let name = fileName || (() => locationType === 'hash'
-            ? html[locationType]
-            : html[locationType].replace(/\//g, '-').replace(/(^-)|(-$)/, ''))()
+          const html = await skeleton.genHtml(path, {
+            cookies: cookies
+          })
+          let name = fileName || html[locationType].replace(/\//g, '-').replace(/(^-)|(-$)/, '')
           if (name === '') name = 'index'
           let file = `${dir}/${name}.html`
           fs.writeFile(file, html.content, (err) => {
@@ -31,6 +32,6 @@ module.exports = {
         })
         resolve(skeleton)
       })
-    }); 
+    });
   }
 }
