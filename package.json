@@ -47,7 +47,8 @@
   "scripts": {
     "test": "mocha",
     "dev": "node index.js",
-    "debug": "sudo node index.js"
+    "debug": "sudo node index.js",
+    "server": "node index.js --server"
   },
   "author": "",
   "license": "ISC",
