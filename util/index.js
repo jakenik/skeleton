@@ -2,7 +2,7 @@
  * @Author: jake 
  * @Date: 2019-12-23 14:04:20 
  * @Last Modified by: jake
- * @Last Modified time: 2019-12-27 20:41:57
+ * @Last Modified time: 2019-12-28 14:11:04
  * 工具类
  */
 'use strict'
@@ -11,8 +11,8 @@ const { promisify } = require('util')
 const fs = require('fs')
 const path = require('path')
 
-async function getScriptContent() { // 获取文件内容返回 promise
-  const sourcePath = path.resolve(__dirname, '../script/index.js')
+async function getScriptContent(src = '../script/index.js') { // 获取文件内容返回 promise
+  const sourcePath = path.resolve(__dirname, src)
   const result = await promisify(fs.readFile)(sourcePath, 'utf-8')
   return result
 }

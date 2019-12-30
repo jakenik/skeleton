@@ -17,17 +17,19 @@ module.exports = {
           path,
           locationType = 'hash',
           fileName = null,
-          cookies
+          cookies,
+          stores
         }) => {
           const html = await skeleton.genHtml(path, {
-            cookies: cookies
+            cookies: cookies,
+            stores,
+            dir,
+            locationType,
+            fileName
           })
-          let name = fileName || html[locationType].replace(/\//g, '-').replace(/(^-)|(-$)/, '')
-          if (name === '') name = 'index'
-          let file = `${dir}/${name}.html`
-          let err = await fs.writeFileSync(file, html.content)
+          let err = await fs.writeFileSync(`${html.fileName}.html`, html.content)
           if (err) throw err;
-          console.log(file + ' 文件已被保存');
+          console.log(`${html.fileName}.html  文件已被保存`);
         })
         resolve(skeleton)
       })

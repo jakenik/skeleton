@@ -718,19 +718,21 @@ var Skeleton = (function (exports) {
     /**
      * add animation of skeleton page when loading
      */
-    switch (loading) {
-      case 'chiaroscuro':
-        addBlick();
-        break
-      case 'spin':
-        addSpin();
-        break
-      case 'shine':
-        addShine();
-        break
-      default:
-        addSpin();
-        break
+    if(loading) {
+      switch (loading) {
+        case 'chiaroscuro':
+          addBlick();
+          break
+        case 'spin':
+          addSpin();
+          break
+        case 'shine':
+          addShine();
+          break
+        default:
+          addSpin();
+          break
+      }
     }
   }
   function getHead() {
@@ -744,7 +746,7 @@ var Skeleton = (function (exports) {
     ele.forEach((el) => newHead.appendChild(el))
     return newHead.innerHTML
   }
-  function getHtmlAndStyle() {
+  function getHtmlAndStyle(cb = () => {}) {
     const root = document.documentElement;
     const rawHtml = root.outerHTML;
     const styles = Array.from($$('style')).map(style => style.innerHTML || style.innerText);
@@ -753,12 +755,14 @@ var Skeleton = (function (exports) {
     // fix html parser can not handle `<div ubt-click=3659 ubt-data="{&quot;restaurant_id&quot;:1236835}" >`
     // need replace `&quot;` into `'`
     const cleanedHtml = document.body.innerHTML.replace(/&quot;/g, "'");
-    return {
+    const h = {
       rawHtml,
       styles,
       cleanedHtml,
       head: head
     }
+    cb(h)
+    return h
   }
 
   exports.genSkeleton = genSkeleton;

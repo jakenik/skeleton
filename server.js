@@ -31,10 +31,11 @@ class FileServer {
             res.end('服务器内部错误')
           }
         } else { // 有该文件
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          // res.setHeader('Content-Type', 'text/html');
           res.setHeader('Content-Length', stat.size)
           var stream = fs.createReadStream(url)
           stream.pipe(res)
-
           stream.on('error', (err) => { // 如果读取文件出错
             res.statusCode = 500
             res.end('服务器内部错误')
@@ -46,4 +47,4 @@ class FileServer {
   }
 }
 module.exports = FileServer
-// new FileServer().listen(3000)
+// new FileServer().listen(9898)

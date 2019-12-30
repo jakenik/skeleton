@@ -8,7 +8,7 @@ module.exports = {
   },
   emulate: 'iPhone 6 Plus', // 配置当前需要爬取的网页打开大小环境
   defaultOptions: {
-    loading: 'spin',
+    loading: false,
     text: { // 该配置对象可以配置一个 color 字段，用于决定骨架页面中文字块的的颜色，颜色值支持16进制、RGB等。
       color: '#EEEEEE'
     },

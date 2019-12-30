@@ -46,7 +46,8 @@
   "devDependencies": {},
   "scripts": {
     "test": "mocha",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "debug": "sudo node index.js"
   },
   "author": "",
   "license": "ISC",

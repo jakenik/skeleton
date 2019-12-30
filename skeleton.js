@@ -2,7 +2,7 @@
  * @Author: jake 
  * @Date: 2019-12-23 14:05:44 
  * @Last Modified by: jake
- * @Last Modified time: 2019-12-27 10:22:18
+ * @Last Modified time: 2019-12-30 15:47:58
  * 骨架屏启动实例
  */
 
@@ -26,6 +26,7 @@ class Skeleton {
     const { log } = this
     try {
       this.scriptContent = await getScriptContent()
+      this.storeContent = await getScriptContent('../script/store/index.js')
       this.browser = await puppeteer.launch(config.puppeteer)
     } catch (err) {
       log(err)
@@ -106,7 +107,11 @@ class Skeleton {
     return cleanedStyles
   }
   async genHtml(url, {
-    cookies
+    cookies,
+    stores = null,
+    dir,
+    locationType,
+    fileName
   }) {
     const page = await this.newPage()
     const stylesheetAstObjects = {}
@@ -130,14 +135,60 @@ class Skeleton {
       }
     })
     await this.setCookie(page, url, cookies)
+    page.on('domcontentloaded', async () => {
+      await page.addScriptTag({ content: this.storeContent })
+      try {
+        await this.setStore(page, stores)
+      } catch (error) {
+        console.log(error)
+      }
+    })
     const response = await page.goto(url, { waitUntil: 'networkidle2' })
-    if (response && !response.ok()) {
-      throw new Error(`${response.status} on ${url}`)
+    // if (response && !response.ok()) {
+    //   throw new Error(`${response.status} on ${url}`)
+    // }
+    const createFileName = await this.getCreateFileName({
+      page,
+      dir,
+      locationType,
+      fileName
+    })
+    let html = await this.makeSkeleton(page, stylesheetContents, stylesheetAstObjects, {
+      createFileName
+    })
+    await page.close()
+    return {
+      ...html,
+      fileName: createFileName
     }
-    return await this.makeSkeleton(page, stylesheetContents, stylesheetAstObjects)
-
+  }
+  async getCreateFileName({
+    page,
+    dir,
+    locationType,
+    fileName
+  }) {
+    const html = {
+      pathname: await page.evaluate('window.location.pathname'),
+      hash: await page.evaluate(() => {
+        var str = window.location.hash;
+        try {
+          str = str.indexOf('?') !== -1
+            ? str.match(/#\/(\S*)(\?)/)[1]
+            : str.match(/#\/(\S*)(\?|$)/)[1]
+          return str
+        } catch (error) {
+          return str
+        }
+      })
+    }
+    let name = fileName || html[locationType].replace(/\//g, '-').replace(/(^-)|(-$)/, '')
+    if (name === '') name = 'index'
+    let file = `${dir}/${name}`
+    return file
   }
   async setCookie(page, url, cookies) {
+    if(!cookies) return false
     return await awaitFor(cookies, async ({
       value,
       name
@@ -150,7 +201,26 @@ class Skeleton {
   async closePage() {
     await this.browser.close();
   }
-  async makeSkeleton(page, stylesheetContents, stylesheetAstObjects) { // 使用内嵌Js窃取节点信息
+  async setStore(page, stores) {
+    if(!stores) return false
+    stores = stores.map((val)=> {
+      try{
+        val.value = JSON.stringify(val.value)
+      } catch (e) {}
+      return val
+    })
+    return await page.evaluate((stores) => stores.map((val) => $store[
+      val.type || 'local'
+    ].set({
+      name: val.name,
+      data: val.value,
+      mode: false
+    })), stores)
+  }
+  async makeSkeleton(page, stylesheetContents, stylesheetAstObjects, params = {}) { // 使用内嵌Js窃取节点信息
+    const {
+      createFileName
+    } = params
     await page.addScriptTag({ content: this.scriptContent })
     const hrefs = await page.evaluate(() => Skeleton.getHrefs())
     const cleanedCSS = await this.cleanedStyles(hrefs, stylesheetAstObjects)
@@ -159,8 +229,8 @@ class Skeleton {
       return generate(cleanedAst)
     }).join('\n')
     await page.evaluate((config) => Skeleton.genSkeleton(config.defaultOptions), config)
-    const { styles, cleanedHtml, head } = await page.evaluate((config) => Skeleton.getHtmlAndStyle(config), config)
-
+    await page.screenshot({path: `${createFileName}.png`})
+    const { styles, cleanedHtml, head } = await page.evaluate(() => Skeleton.getHtmlAndStyle())
     let css = [styles, ...stylesheetContents, allCleanedCSS].join(' ')
 
     let shellHtml = HTML_MODEL
@@ -183,7 +253,6 @@ class Skeleton {
       }),
       content: shellHtml
     }
-    await page.close()
     return result
   }
 }
